@@ -100,7 +100,7 @@ func SetSession(userid int64, w *http.ResponseWriter, r *http.Request) {
 	key := CreateloginKey(c)
 	keyPut, err := datastore.Put(c, key, g)
 	if err != nil {
-    http.Error((*w), err.Error(), http.StatusInternalServerError)
+    	http.Error((*w), err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -115,11 +115,12 @@ func SetSession(userid int64, w *http.ResponseWriter, r *http.Request) {
 			Value: encoded,
 			Path:  "/",
 			MaxAge: 3600,
-			Domain: ".auth-test-selva.appspot.com",
+			Domain: ".auth-test-ryan.appspot.com",
 
 
 		}
-    http.SetCookie((*w), cookie)
+   		
+   		http.SetCookie((*w), cookie)
 
 		loginUser:=loggedinusers{
 			UID: userid,
@@ -127,7 +128,7 @@ func SetSession(userid int64, w *http.ResponseWriter, r *http.Request) {
 			Extime : time.Now().Unix() + 3600,
 		}
 		if _, errPut := datastore.Put(c, LoginKey(c, loginUser.SID), &loginUser); errPut != nil {
-      fmt.Fprint((*w), errPut)
+      		fmt.Fprint((*w), errPut)
 		}
 	}
 	//sendJson(&w, r, "User Logged In", "0", strconv.FormatInt(keyPut.IntID(), 10))
