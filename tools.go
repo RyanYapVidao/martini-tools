@@ -18,8 +18,8 @@ var CookieHandler = securecookie.New(key1, key2)
 
 //var Appname string = "authentication.auth-test-selva.appspot.com"
 var Appname string = "127.0.0.1:8081"
-var FacebookclientID string = "292218430981996"
-var FacebookclientSecret string = "147654d9e76f7db91eb3b574a63d751d"
+var FacebookclientID string = "499628346846146"
+var FacebookclientSecret string = "4538c6faccc2ea698392220c210e6d54"
 
 type jsonreply JsonReply
 type loggedinusers Loggedinusers
