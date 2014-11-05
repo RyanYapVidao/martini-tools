@@ -16,10 +16,13 @@ var key1 = []byte("5916569511133184")
 var key2 = []byte("4776259720577024")
 var CookieHandler = securecookie.New(key1, key2)
 
-//var Appname string = "authentication.auth-test-selva.appspot.com"
-var Appname string = "127.0.0.1:8081"
+var Appname string = "authentication.auth-test-ryan.appspot.com"
+//var Appname string = "127.0.0.1:8081"
 var FacebookclientID string = "499628346846146"
 var FacebookclientSecret string = "4538c6faccc2ea698392220c210e6d54"
+var GoogleClientID string = "123186211988-uhijqudedasocrct7vn1s70jp7srsr68.apps.googleusercontent.com"
+var GoogleClientSecret string = "uC8mXLjT5WpxLjpbuGNFboGp"
+
 
 type jsonreply JsonReply
 type loggedinusers Loggedinusers
@@ -124,7 +127,7 @@ func SetSession(userid int64, w *http.ResponseWriter, r *http.Request) {
 
 
 		}
-   		
+
    		http.SetCookie((*w), cookie)
 
 		loginUser:=loggedinusers{
