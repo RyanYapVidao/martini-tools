@@ -2,7 +2,7 @@ package tools
 
 type JsonReply struct {
   Status string
-  Uid    string
+  ID    string
   Sid    string
 }
 
@@ -29,4 +29,9 @@ type ProfileVcard struct {
 	Permission int
 	OwnerID    int64
 	SearchTerm string
+}
+
+type Unvalidatedusers struct {
+	Email  string
+	UID int64
 }
