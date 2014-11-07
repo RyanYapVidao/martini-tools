@@ -1,7 +1,6 @@
 package tools
 
 import (
-  "encoding/json"
   "encoding/base64"
   "regexp"
   "net/http"
@@ -16,15 +15,6 @@ import (
   "crypto/rand"
   )
 
-var Appname string = "authentication.auth-test-ryan.appspot.com"
-//var Appname string = "127.0.0.1:8081"
-var FacebookclientID string = "499628346846146"
-var FacebookclientSecret string = "4538c6faccc2ea698392220c210e6d54"
-var GoogleClientID string = "123186211988-uhijqudedasocrct7vn1s70jp7srsr68.apps.googleusercontent.com"
-var GoogleClientSecret string = "uC8mXLjT5WpxLjpbuGNFboGp"
-var LinkedinAPIKey string = "75xf5zzyy9kf8v"
-var LinkedinAPISecret string = "8StnOtxpp1ftGZHN"
-var AdminEmail = "selva@vidao.co"
 
 type jsonreply JsonReply
 type loggedinusers Loggedinusers
@@ -99,22 +89,9 @@ func Int64ToString(input int64) (output string){
   return strconv.FormatInt(input, 10)
 }
 
-func SendJson(w *http.ResponseWriter, r *http.Request, message string, id string, sid string) {
-
-  var jsreply JsonReply
-  jsreply.Status = message
-  jsreply.Sid = sid
-  jsreply.ID = id
-  js, err := json.Marshal(jsreply)
-  if err != nil {
-    http.Error((*w), err.Error(), http.StatusInternalServerError)
-    return
-  }
-  (*w).Header().Add("Content-Type", "application/json")
-  (*w).Header().Add("Access-Control-Allow-Origin", "*")
-  (*w).Header().Add("X-Requested-With", "XMLHttpRequest")
-  (*w).Write(js)
-  return
+func (jsreply *JsonReply)CreateJson(w *http.ResponseWriter, r *http.Request, message string, object interface{}) {
+  (*jsreply).Status = message
+  (*jsreply).Data = object
 }
 
 func SetSession(userid int64, w *http.ResponseWriter, r *http.Request,session *sessions.Session) {
@@ -123,7 +100,7 @@ func SetSession(userid int64, w *http.ResponseWriter, r *http.Request,session *s
 	g := &loggedinusers{
 		SID: 0,
 	}
-	
+
 	key := CreateloginKey(c)
 	keyPut, err := datastore.Put(c, key, g)
 	if err != nil {

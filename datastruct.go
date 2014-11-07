@@ -2,8 +2,7 @@ package tools
 
 type JsonReply struct {
   Status string
-  ID    string
-  Sid    string
+  Data interface{}
 }
 
 type Loggedinusers struct {
