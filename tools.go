@@ -10,14 +10,11 @@ import (
   "strconv"
   "appengine/datastore"
   "appengine"
-  "github.com/gorilla/securecookie"
+  //"github.com/gorilla/securecookie"
+  "github.com/martini-contrib/sessions"
   "time"
   "crypto/rand"
   )
-
-var key1 = []byte("5916569511133184")
-var key2 = []byte("4776259720577024")
-var CookieHandler = securecookie.New(key1, key2)
 
 var Appname string = "authentication.auth-test-ryan.appspot.com"
 //var Appname string = "127.0.0.1:8081"
@@ -120,13 +117,13 @@ func SendJson(w *http.ResponseWriter, r *http.Request, message string, id string
   return
 }
 
-func SetSession(userid int64, w *http.ResponseWriter, r *http.Request) {
+func SetSession(userid int64, w *http.ResponseWriter, r *http.Request,session *sessions.Session) {
 	c := appengine.NewContext(r)
 
 	g := &loggedinusers{
 		SID: 0,
 	}
-
+	
 	key := CreateloginKey(c)
 	keyPut, err := datastore.Put(c, key, g)
 	if err != nil {
@@ -134,34 +131,16 @@ func SetSession(userid int64, w *http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	value := map[string]string{
-		"userid":    strconv.FormatInt(userid, 10),
-		"sessionid": strconv.FormatInt(keyPut.IntID(), 10),
+	(*session).Set("UID",strconv.FormatInt(userid, 10))
+	(*session).Set("SID",strconv.FormatInt(keyPut.IntID(), 10))
+	loginUser:=loggedinusers{
+		UID: userid,
+		SID : keyPut.IntID(),
+		Extime : time.Now().Unix() + 3600,
 	}
-	if encoded, err := CookieHandler.Encode("session", value); err == nil {
-		cookie := &http.Cookie{
-
-			Name:  "session",
-			Value: encoded,
-			Path:  "/",
-			MaxAge: 3600,
-			Domain: ".auth-test-ryan.appspot.com",
-
-
-		}
-
-   		http.SetCookie((*w), cookie)
-
-		loginUser:=loggedinusers{
-			UID: userid,
-			SID : keyPut.IntID(),
-			Extime : time.Now().Unix() + 3600,
-		}
-		if _, errPut := datastore.Put(c, LoginKey(c, loginUser.SID), &loginUser); errPut != nil {
-      		fmt.Fprint((*w), errPut)
-		}
+	if _, errPut := datastore.Put(c, LoginKey(c, loginUser.SID), &loginUser); errPut != nil {
+		fmt.Fprint((*w), errPut)
 	}
-	//sendJson(&w, r, "User Logged In", "0", strconv.FormatInt(keyPut.IntID(), 10))
 }
 
 func ClearSession(SID int64, w *http.ResponseWriter, r *http.Request) {
