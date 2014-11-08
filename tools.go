@@ -36,7 +36,6 @@ func FillUsersKey(c appengine.Context, Userid int64) *datastore.Key {
 	return datastore.NewKey(c, "User", "", Userid, nil)
 }
 
-
 func LoginKey(c appengine.Context, Sessionid int64) *datastore.Key {
 	return datastore.NewKey(c, "login", "", Sessionid, nil)
 }
@@ -110,6 +109,7 @@ func SetSession(userid int64, w *http.ResponseWriter, r *http.Request,session *s
 
 	(*session).Set("UID",strconv.FormatInt(userid, 10))
 	(*session).Set("SID",strconv.FormatInt(keyPut.IntID(), 10))
+
 	loginUser:=loggedinusers{
 		UID: userid,
 		SID : keyPut.IntID(),
@@ -120,17 +120,10 @@ func SetSession(userid int64, w *http.ResponseWriter, r *http.Request,session *s
 	}
 }
 
-func ClearSession(SID int64, w *http.ResponseWriter, r *http.Request) {
+func ClearSession(SID int64, w *http.ResponseWriter, r *http.Request,session *sessions.Session) {
 	c := appengine.NewContext(r)
-	cookie := &http.Cookie{
-		Name:   "session",
-		MaxAge: -1,
-		Domain: ".auth-test-selva.appspot.com",
-	}
-
-	//fmt.Fprint(w,"cookies deleted")
-	http.SetCookie(*w, cookie)
-
+	(*session).Delete("UID")
+  (*session).Delete("SID")
 	if deleteErr := datastore.Delete(c, LoginKey(c, SID)); deleteErr != nil {
 		fmt.Fprint(*w, deleteErr)
 	}
