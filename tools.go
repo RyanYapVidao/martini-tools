@@ -36,6 +36,7 @@ func FillUsersKey(c appengine.Context, Userid int64) *datastore.Key {
 	return datastore.NewKey(c, "User", "", Userid, nil)
 }
 
+
 func LoginKey(c appengine.Context, Sessionid int64) *datastore.Key {
 	return datastore.NewKey(c, "login", "", Sessionid, nil)
 }
@@ -48,8 +49,12 @@ func ProfileKey(c appengine.Context, ancestor *datastore.Key) *datastore.Key {
 	return datastore.NewKey(c, "Profile", "", 0, ancestor)
 }
 
-func UnvalidatedKey(c appengine.Context, Userid int64) *datastore.Key {
-	return datastore.NewKey(c, "unvaildatedusers", "", Userid, nil)
+func UnvalidatedKey(c appengine.Context, Code int64) *datastore.Key {
+	return datastore.NewKey(c, "unvaildatedusers", "", Code, nil)
+}
+
+func CreateUnvalidatedKey(c appengine.Context) *datastore.Key {
+  return datastore.NewKey(c, "unvaildatedusers", "", 0, nil)
 }
 
 func Hash256(input string) (output string){
@@ -106,9 +111,8 @@ func SetSession(userid int64, w *http.ResponseWriter, r *http.Request,session *s
     	http.Error((*w), err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+(*session).Set("SID",strconv.FormatInt(keyPut.IntID(), 10))
 	(*session).Set("UID",strconv.FormatInt(userid, 10))
-	(*session).Set("SID",strconv.FormatInt(keyPut.IntID(), 10))
 
 	loginUser:=loggedinusers{
 		UID: userid,
@@ -120,10 +124,14 @@ func SetSession(userid int64, w *http.ResponseWriter, r *http.Request,session *s
 	}
 }
 
-func ClearSession(SID int64, w *http.ResponseWriter, r *http.Request,session *sessions.Session) {
+func ClearSession(SID int64, w *http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
-	(*session).Delete("UID")
-  (*session).Delete("SID")
+	cookie := &http.Cookie{
+    Name:   "VidaoSession",
+    MaxAge: -1,
+    Domain: ".auth-test-ryan.appspot.com",
+  }
+  http.SetCookie(*w, cookie)
 	if deleteErr := datastore.Delete(c, LoginKey(c, SID)); deleteErr != nil {
 		fmt.Fprint(*w, deleteErr)
 	}

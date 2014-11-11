@@ -5,6 +5,11 @@ type JsonReply struct {
   Data interface{}
 }
 
+type Cookie struct {
+  UID string
+  SID string
+}
+
 type Loggedinusers struct {
 	UID    int64
 	SID 	int64
@@ -32,5 +37,6 @@ type ProfileVcard struct {
 
 type Unvalidatedusers struct {
 	Email  string
+  Code  string
 	UID int64
 }
