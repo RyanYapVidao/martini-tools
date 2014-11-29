@@ -17,7 +17,7 @@ import (
 
 
 type jsonreply JsonReply
-type loggedinusers Loggedinusers
+type loggedinusers LoggedInUsers
 
 
 func OpenidKey(c appengine.Context, openid string) *datastore.Key {
@@ -36,6 +36,9 @@ func FillUsersKey(c appengine.Context, Userid int64) *datastore.Key {
 	return datastore.NewKey(c, "User", "", Userid, nil)
 }
 
+func GetParentKey(c appengine.Context, kind string, Userid int64) *datastore.Key {
+  return datastore.NewKey(c, kind, "", Userid, nil)
+}
 
 func LoginKey(c appengine.Context, Sessionid int64) *datastore.Key {
 	return datastore.NewKey(c, "login", "", Sessionid, nil)
@@ -48,6 +51,11 @@ func CreateloginKey(c appengine.Context) *datastore.Key {
 func ProfileKey(c appengine.Context, ancestor *datastore.Key) *datastore.Key {
 	return datastore.NewKey(c, "Profile", "", 0, ancestor)
 }
+
+func SampleProfileKey(c appengine.Context) *datastore.Key {
+  return datastore.NewKey(c, "Profile", "", 0, nil)
+}
+
 
 func UnvalidatedKey(c appengine.Context, Code int64) *datastore.Key {
 	return datastore.NewKey(c, "unvaildatedusers", "", Code, nil)
@@ -98,7 +106,7 @@ func (jsreply *JsonReply)CreateJson(w *http.ResponseWriter, r *http.Request, mes
   (*jsreply).Data = object
 }
 
-func SetSession(userid int64, w *http.ResponseWriter, r *http.Request,session *sessions.Session) {
+func SetSession(userid int64, w *http.ResponseWriter, r *http.Request, session *sessions.Session) {
 	c := appengine.NewContext(r)
 
 	g := &loggedinusers{
@@ -111,28 +119,28 @@ func SetSession(userid int64, w *http.ResponseWriter, r *http.Request,session *s
     	http.Error((*w), err.Error(), http.StatusInternalServerError)
 		return
 	}
-(*session).Set("SID",strconv.FormatInt(keyPut.IntID(), 10))
+  (*session).Set("SID",strconv.FormatInt(keyPut.IntID(), 10))
 	(*session).Set("UID",strconv.FormatInt(userid, 10))
 
 	loginUser:=loggedinusers{
 		UID: userid,
 		SID : keyPut.IntID(),
-		Extime : time.Now().Unix() + 3600,
+		Extime : time.Now().Unix() + 7200,
 	}
 	if _, errPut := datastore.Put(c, LoginKey(c, loginUser.SID), &loginUser); errPut != nil {
 		fmt.Fprint((*w), errPut)
 	}
 }
 
-func ClearSession(SID int64, w *http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
-	cookie := &http.Cookie{
-    Name:   "VidaoSession",
-    MaxAge: -1,
-    Domain: ".auth-test-ryan.appspot.com",
+func ClearSession(SessionID int64, w *http.ResponseWriter, r *http.Request) {
+  c := appengine.NewContext(r)
+  if deleteErr := datastore.Delete(c, LoginKey(c, SessionID)); deleteErr != nil {
+    fmt.Fprint(*w, deleteErr)
+  }
+  cookie := &http.Cookie{
+      Name:   "VidaoSession",
+      MaxAge: -1,
   }
   http.SetCookie(*w, cookie)
-	if deleteErr := datastore.Delete(c, LoginKey(c, SID)); deleteErr != nil {
-		fmt.Fprint(*w, deleteErr)
-	}
+  return
 }
